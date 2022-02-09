@@ -1,0 +1,37 @@
+{
+	"maxSims": 3,
+	"appPath": "/Path/To/App.app",
+	"testAppPath": "/Path/To/AppRunner.app",
+	"xcTestRunPath": "/Path/To/main.xctestrun",
+	"bpPath": "/Path/To/bluepill/bp",
+	"environment": {
+		"INTEGRATION_TEST_MODE": "1",
+		"PIN_IOS_TEST_IN_VPN": "true"
+	},
+	"testTasks": [
+		{
+			"tests": [
+				{
+					"testClass": "MyTestClass",
+					"method": "myTestMethod"
+				}
+			],
+			"label": "MyTestClass/myTestMethod"
+		},
+		{
+			"tests": [
+				{
+					"testClass": "MyOtherTestClass",
+					"method": "myOtherTestMethod"
+				}
+			],
+			"label": "MyOtherTestClass/myOtherTestMethod"
+		}
+	],
+	"simulatorPreferencesPath": "/Path/To/GlobalPreferences.plist",
+	"outputPath": "bpout",
+	"headless": false,
+	"device": "iPhone 8",
+	"maxRetries": 0,
+	"runtime": "iOS 14.0"
+}
