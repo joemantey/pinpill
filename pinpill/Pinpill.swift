@@ -96,6 +96,7 @@ class Pinpill {
         //  2) Any two tests are from separate .xctest bundles (not compatible with bp)
         var xcTestForTaskOpt: XCTest?
         for test in taskConfig.tests {
+            Logger.info(msg: "Printing out XCTest \(xcTests)")
             guard let xcTestForTest = (xcTests.first { xcTest in xcTest.testClasses.contains(test) }) else {
                 Logger.error(msg: "Could not find test \(test) in any of the referenced test bundles. Skipping.")
                 return []
