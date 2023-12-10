@@ -97,10 +97,9 @@ class Pinpill {
         var xcTestForTaskOpt: XCTest?
         for test in taskConfig.tests {
             for xcTest in xcTests {
-                for testclass in xcTest.testClasses {
-                    for testMethod in testclass {
-                        print(testMethod)
-                    }
+                for testClass in xcTest.testClasses {
+                    Logger.info(msg: "Printing out test classes \(testClass)")
+
                 }
             }
             Logger.info(msg: "Printing out XCTest \(xcTests)")
