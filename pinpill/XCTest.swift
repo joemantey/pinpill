@@ -82,24 +82,23 @@ class XCTest {
 
     static func extractSwiftTestSymbols(xcTestObjectURL: URL) -> [String] {
         let shell = Shell()
-        let nmTask = shell.launchWaitAndGetOutput(
-            cmd: Shell.kBinNm,
-            args: ["-gU", xcTestObjectURL.path]
-        )
+        // Use the Shell class to get mangled symbols from 'nm'
+        let nmTask = shell.launchWaitAndGetOutput(cmd: Shell.kBinNm, args: ["-gU", xcTestObjectURL.path])
+  
         let mangledSymbols = nmTask.stdOut
             .split(separator: "\n")
-            .map { $0.split(separator: " ") }
-            .filter { $0.count >= 3 }
-            .map { String($0[2]) }
-        let demangleTask = shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols)
-        let symbols = demangleTask.stdOut
+            .compactMap { $0.split(separator: " ").last }.map(String.init)
+  
+        // Demangling symbols using 'swift-demangle'
+        let demangledOutput = shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols)
+        let symbols = demangledOutput.stdOut
             .split(separator: "\n")
-            .map { $0.split(separator: " ") }
-            .filter { $0.count >= 3 }
-            .map { String($0[2]) }
-        // This does not actually match the last step of the bluepill regex, and will probably break somewhere
-        // nm -gU '%@' | cut -d' ' -f3 | xargs -s 131072 xcrun swift-demangle | cut -d' ' -f3 | grep -e '[\\.|_]'test
-        let testSymbols = symbols.filter { $0.contains("test") }
+            .compactMap { $0.split(separator: " ").last }.map(String.init)
+  
+        // Regex filtering
+        let testMethodRegex = "[\\.|_]test"
+        let testSymbols = symbols.filter { $0.range(of: testMethodRegex, options: .regularExpression) != nil }
+          
         return testSymbols
     }
 
