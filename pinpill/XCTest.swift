@@ -85,43 +85,31 @@ class XCTest {
         // Use the Shell class to get mangled symbols from 'nm'
         let nmTask = shell.launchWaitAndGetOutput(cmd: Shell.kBinNm, args: ["-gU", xcTestObjectURL.path])
         
-        Logger.error(msg: "not an error, printing nmTask \(nmTask)")
-        // we can see the swift methods here
         let mangledSymbols = nmTask.stdOut
             .split(separator: "\n")
             .map{ $0.replacingOccurrences(of: "_$", with: "\\$")} // the mangled code has $ in it. We need to remove those so it can be handled by the shell
             .compactMap { $0.split(separator: " ").last }.map(String.init)
-        Logger.error(msg: "not an error, printing mangled symbols \(mangledSymbols)")
-        // we can also se swift methods here
-        
         
         // Demangling symbols using 'swift-demangle'
-        var demangledOutput = (shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols))
-        var demangledOutputforPrinting = demangledOutput.stdOut.replacingOccurrences(of: "_$", with: "\\$")
-        Logger.error(msg: "not an error, printing demangled symbols \(demangledOutputforPrinting)")
-        Logger.error(msg: "not an error, printing demangled symbols \(demangledOutput)")
+        let demangledOutput = (shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols))
+ 
+        
+        let symbols =  demangledOutput.stdOut
+            .replacingOccurrences(of: "_$", with: "\\$")
+            .split(separator: "\n", omittingEmptySubsequences: true)  // Split the input into lines; ignore empty lines.
+            .map { $0.split(separator: " ", maxSplits: Int.max, omittingEmptySubsequences: true) }
+            .flatMap{ $0}
+        
+        let spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
+        Logger.info(msg: "Printing spaced symbols \(spacedSymbols)")
 
-        let symbols = demangledOutput.stdOut
-            .split(separator: "\n")
-            .compactMap { line -> String? in
-                let words = line.split(separator: " ")
-                
-                guard words.count >= 3 else {
-                    return nil
-                }
-                let classAndMethodName = words[1...2]
-                return classAndMethodName.joined(separator: " ")
-            }
-//            .compactMap { $0.split(separator: " ")}
-//            .map(String.init)
-        Logger.info(msg: "not an error, printing symbols \(symbols)")
+        let classesAndMethods = spacedSymbols.compactMap{ item -> String? in
+            let words = item.split(separator: " ")
+            return words.count == 3 ? words.suffix(2).joined(separator: " ") : nil }
+ 
+        Logger.info(msg: "Printing symbols \(classesAndMethods)")
 
-        // Regex filtering
-//        let testMethodRegex = "[\\.|_]test"
-//        let testSymbols = symbols.filter { $0.range(of: testMethodRegex, options: .regularExpression) != nil }
-//        Logger.error(msg: "not an error, printing testSymbols \(testSymbols)")
-//
-        return symbols
+        return classesAndMethods
     }
 
     static func extractObjCTestSymbols(xcTestObjectURL: URL) -> [String] {
@@ -140,7 +128,7 @@ class XCTest {
                     return nil
                 }
             }.filter { $0.contains("test") }
-        Logger.error(msg: "not an error, printing testSymbols \(symbols)")
+        Logger.info(msg: "Printing testSymbols \(symbols)")
         return symbols
     }
 
@@ -208,10 +196,8 @@ class XCTest {
 
     static func fromXCTestRun(xcTestRunURL: URL, testRootURL: URL, xcodeURL: URL) throws -> [XCTest] {
         let testSuiteToConfig: [String: Any] = try readXCTestRun(atURL: xcTestRunURL) as! [String: Any]
-        Logger.error(msg: "not an error, printing out Test Suites Config \(testSuiteToConfig)")
 
         let testSuites: [(name: String, config: [String: Any])] = testSuiteToConfig.map { key, value in (name: key, config: value as! [String: Any]) }.sorted { $0.name < $1.name }
-        Logger.error(msg: "not an error, printing out Test Suites \(testSuites)")
         return testSuites.compactMap { testSuite in
             do {
                 return try buildXCTestFromXCTestRunConfig(name: testSuite.name, config: testSuite.config, testRootURL: testRootURL, xcodeURL: xcodeURL)
