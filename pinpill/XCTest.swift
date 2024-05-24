@@ -84,21 +84,27 @@ class XCTest {
         let shell = Shell()
         // Use the Shell class to get mangled symbols from 'nm'
         let nmTask = shell.launchWaitAndGetOutput(cmd: Shell.kBinNm, args: ["-gU", xcTestObjectURL.path])
-  
+        
+        Logger.error(msg: "not an error, printing nmTask \(nmTask)")
         let mangledSymbols = nmTask.stdOut
             .split(separator: "\n")
             .compactMap { $0.split(separator: " ").last }.map(String.init)
-  
+        Logger.error(msg: "not an error, printing mangled symbols \(mangledSymbols)")
+
         // Demangling symbols using 'swift-demangle'
         let demangledOutput = shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols)
+        Logger.error(msg: "not an error, printing demangled symbols \(demangledOutput)")
+
         let symbols = demangledOutput.stdOut
             .split(separator: "\n")
             .compactMap { $0.split(separator: " ").last }.map(String.init)
-  
+        Logger.error(msg: "not an error, printing symbols \(symbols)")
+
         // Regex filtering
         let testMethodRegex = "[\\.|_]test"
         let testSymbols = symbols.filter { $0.range(of: testMethodRegex, options: .regularExpression) != nil }
-          
+        Logger.error(msg: "not an error, printing testSymbols \(testSymbols)")
+
         return testSymbols
     }
 
@@ -185,7 +191,10 @@ class XCTest {
 
     static func fromXCTestRun(xcTestRunURL: URL, testRootURL: URL, xcodeURL: URL) throws -> [XCTest] {
         let testSuiteToConfig: [String: Any] = try readXCTestRun(atURL: xcTestRunURL) as! [String: Any]
+        Logger.error(msg: "not an error, printing out Test Suites Config \(testSuiteToConfig)")
+
         let testSuites: [(name: String, config: [String: Any])] = testSuiteToConfig.map { key, value in (name: key, config: value as! [String: Any]) }.sorted { $0.name < $1.name }
+        Logger.error(msg: "not an error, printing out Test Suites \(testSuites)")
         return testSuites.compactMap { testSuite in
             do {
                 return try buildXCTestFromXCTestRunConfig(name: testSuite.name, config: testSuite.config, testRootURL: testRootURL, xcodeURL: xcodeURL)
