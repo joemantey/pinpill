@@ -86,13 +86,19 @@ class XCTest {
         let nmTask = shell.launchWaitAndGetOutput(cmd: Shell.kBinNm, args: ["-gU", xcTestObjectURL.path])
         
         Logger.error(msg: "not an error, printing nmTask \(nmTask)")
+        // we can see the swift methods here
         let mangledSymbols = nmTask.stdOut
             .split(separator: "\n")
+            .map{ $0.replacingOccurrences(of: "_$", with: "\\$")} // the mangled code has $ in it. We need to remove those so it can be handled by the shell
             .compactMap { $0.split(separator: " ").last }.map(String.init)
         Logger.error(msg: "not an error, printing mangled symbols \(mangledSymbols)")
-
+        // we can also se swift methods here
+        
+        
         // Demangling symbols using 'swift-demangle'
-        let demangledOutput = shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols)
+        var demangledOutput = (shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols))
+        var demangledOutputforPrinting = demangledOutput.stdOut.replacingOccurrences(of: "_$", with: "\\$")
+        Logger.error(msg: "not an error, printing demangled symbols \(demangledOutputforPrinting)")
         Logger.error(msg: "not an error, printing demangled symbols \(demangledOutput)")
 
         let symbols = demangledOutput.stdOut
