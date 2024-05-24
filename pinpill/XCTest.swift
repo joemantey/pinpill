@@ -103,15 +103,25 @@ class XCTest {
 
         let symbols = demangledOutput.stdOut
             .split(separator: "\n")
-            .compactMap { $0.split(separator: " ").last }.map(String.init)
-        Logger.error(msg: "not an error, printing symbols \(symbols)")
+            .compactMap { line -> String? in
+                let words = line.split(separator: " ")
+                
+                guard words.count >= 3 else {
+                    return nil
+                }
+                let classAndMethodName = words[1...2]
+                return classAndMethodName.joined(separator: " ")
+            }
+//            .compactMap { $0.split(separator: " ")}
+//            .map(String.init)
+        Logger.info(msg: "not an error, printing symbols \(symbols)")
 
         // Regex filtering
-        let testMethodRegex = "[\\.|_]test"
-        let testSymbols = symbols.filter { $0.range(of: testMethodRegex, options: .regularExpression) != nil }
-        Logger.error(msg: "not an error, printing testSymbols \(testSymbols)")
-
-        return testSymbols
+//        let testMethodRegex = "[\\.|_]test"
+//        let testSymbols = symbols.filter { $0.range(of: testMethodRegex, options: .regularExpression) != nil }
+//        Logger.error(msg: "not an error, printing testSymbols \(testSymbols)")
+//
+        return symbols
     }
 
     static func extractObjCTestSymbols(xcTestObjectURL: URL) -> [String] {
@@ -130,6 +140,7 @@ class XCTest {
                     return nil
                 }
             }.filter { $0.contains("test") }
+        Logger.error(msg: "not an error, printing testSymbols \(symbols)")
         return symbols
     }
 

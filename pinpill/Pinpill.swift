@@ -98,8 +98,7 @@ class Pinpill {
         for test in taskConfig.tests {
             for xcTest in xcTests {
                 for testClass in xcTest.testClasses {
-                    Logger.error(msg: "Not an error, Printing out test classes \(testClass)")
-
+                    Logger.info(msg: "Printing out test classes \(testClass)")
                 }
             }
             Logger.error(msg: "Not an error, Printing out XCTest \(xcTests)")
