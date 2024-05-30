@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		380127732C013C2F009183D7 /* UnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380127722C013C2F009183D7 /* UnitTests.swift */; };
+		3801277A2C091FC2009183D7 /* Shell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5FC0DEA24834F3B00F6FD36 /* Shell.swift */; };
+		3801277B2C092202009183D7 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58AA1C724E3DEC200835ADF /* Logger.swift */; };
 		A51211DE24994EB700400428 /* ReportCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51211DD24994EB700400428 /* ReportCollector.swift */; };
 		A51211E0249972BF00400428 /* ReportTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51211DF249972BF00400428 /* ReportTree.swift */; };
 		A54CE4A72481E479006DE3BE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54CE4A62481E479006DE3BE /* main.swift */; };
@@ -32,6 +34,16 @@
 		A5FC0DEB24834F3B00F6FD36 /* Shell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5FC0DEA24834F3B00F6FD36 /* Shell.swift */; };
 		A5FC0DED2484621D00F6FD36 /* PinpillURLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5FC0DEC2484621D00F6FD36 /* PinpillURLs.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		380127782C091EDC009183D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A54CE49B2481E478006DE3BE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A54CE4A22481E478006DE3BE;
+			remoteInfo = pinpill;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		A54CE4A12481E478006DE3BE /* CopyFiles */ = {
@@ -209,6 +221,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				380127792C091EDC009183D7 /* PBXTargetDependency */,
 			);
 			name = UnitTests;
 			productName = UnitTests;
@@ -290,6 +303,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3801277B2C092202009183D7 /* Logger.swift in Sources */,
+				3801277A2C091FC2009183D7 /* Shell.swift in Sources */,
 				380127732C013C2F009183D7 /* UnitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -324,6 +339,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		380127792C091EDC009183D7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A54CE4A22481E478006DE3BE /* pinpill */;
+			targetProxy = 380127782C091EDC009183D7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		380127752C013C2F009183D7 /* Debug */ = {

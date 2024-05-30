@@ -98,6 +98,7 @@ class XCTest {
             .replacingOccurrences(of: "_$", with: "\\$")
             .split(separator: "\n", omittingEmptySubsequences: true)  // Split the input into lines; ignore empty lines.
             .map { $0.split(separator: " ", maxSplits: Int.max, omittingEmptySubsequences: true) }
+            .filter{ $0.contains("test")}
             .flatMap{ $0}
         
         let spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
