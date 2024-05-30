@@ -98,15 +98,17 @@ class XCTest {
             .replacingOccurrences(of: "_$", with: "\\$")
             .split(separator: "\n", omittingEmptySubsequences: true)  // Split the input into lines; ignore empty lines.
             .map { $0.split(separator: " ", maxSplits: Int.max, omittingEmptySubsequences: true) }
-            .filter{ $0.contains("test")}
             .flatMap{ $0}
         
         let spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
         Logger.info(msg: "Printing spaced symbols \(spacedSymbols)")
 
-        let classesAndMethods = spacedSymbols.compactMap{ item -> String? in
+        var classesAndMethods = spacedSymbols.compactMap{ item -> String? in
             let words = item.split(separator: " ")
             return words.count == 3 ? words.suffix(2).joined(separator: " ") : nil }
+        
+        classesAndMethods = classesAndMethods.filter{ $0.contains("test")}
+
  
         Logger.info(msg: "Printing symbols \(classesAndMethods)")
 
