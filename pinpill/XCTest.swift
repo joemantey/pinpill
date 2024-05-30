@@ -105,10 +105,8 @@ class XCTest {
 
         var classesAndMethods = spacedSymbols.compactMap{ item -> String? in
             let words = item.split(separator: " ")
-            return words.count == 3 ? words.suffix(2).joined(separator: " ") : nil }
+            return (words.count == 3 && words.contains("test")) ? words.suffix(2).joined(separator: " ") : nil }
         
-        classesAndMethods = classesAndMethods.filter{ $0.contains("test")}
-
  
         Logger.info(msg: "Printing symbols \(classesAndMethods)")
 
