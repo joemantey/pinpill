@@ -100,12 +100,14 @@ class XCTest {
             .map { $0.split(separator: " ", maxSplits: Int.max, omittingEmptySubsequences: true) }
             .flatMap{ $0}
         
-        let spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
+        var spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
         Logger.info(msg: "Printing spaced symbols \(spacedSymbols)")
 
-        var classesAndMethods = spacedSymbols.compactMap{ item -> String? in
+        spacedSymbols = spacedSymbols.filter{ $0.contains("test")}
+
+        let classesAndMethods = spacedSymbols.compactMap{ item -> String? in
             let words = item.split(separator: " ")
-            return (words.count == 3 && words.contains("test")) ? words.suffix(2).joined(separator: " ") : nil }
+            return words.count == 3 ? words.suffix(2).joined(separator: " ") : nil }
         
  
         Logger.info(msg: "Printing symbols \(classesAndMethods)")
