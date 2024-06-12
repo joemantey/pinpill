@@ -92,6 +92,33 @@ class Shell {
         return (process: process, stdOut: stdOut)
     }
 
+    func launchWaitAndGetOutputForChunks(cmd: String, args: [String]) -> (stdOut: String, stdErr: String) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: cmd)
+        process.arguments = args
+  
+        let stdoutPipe = Pipe()
+        let stderrPipe = Pipe()
+        process.standardOutput = stdoutPipe
+        process.standardError = stderrPipe
+  
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            print("Error launching process: \(error)")
+            return ("", "Error launching process: \(error)")
+        }
+  
+        let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+        let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+  
+        let stdOut = String(data: stdoutData, encoding: .utf8) ?? ""
+        let stdErr = String(data: stderrData, encoding: .utf8) ?? ""
+  
+        return (stdOut, stdErr)
+    }
+
     func which(executable: String) -> String? {
         let result = launchWaitAndGetOutput(cmd: Shell.kBinWhich, args: [executable])
         let executablePath = result.stdOut.trimmingCharacters(in: .whitespacesAndNewlines)

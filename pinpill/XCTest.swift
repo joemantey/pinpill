@@ -67,7 +67,7 @@ class XCTest {
         let objCSymbols = extractObjCTestSymbols(xcTestObjectURL: xcTestObjectURL)
         let swiftSymbols = extractSwiftTestSymbols(xcTestObjectURL: xcTestObjectURL)
         let symbols = objCSymbols + swiftSymbols
-
+        
         // Ignore colons because test methods do not have arguments
         let symbolsWithoutArgs = symbols.filter { !$0.contains(":") }
         let classAndMethod = symbolsWithoutArgs
@@ -79,39 +79,45 @@ class XCTest {
         let testMethods = classAndMethod.map { TestMethod(testClass: String($0[0]), method: String($0[1])) }
         return Set(testMethods)
     }
-
+    
     static func extractSwiftTestSymbols(xcTestObjectURL: URL) -> [String] {
         let shell = Shell()
         // Use the Shell class to get mangled symbols from 'nm'
         let nmTask = shell.launchWaitAndGetOutput(cmd: Shell.kBinNm, args: ["-gU", xcTestObjectURL.path])
-        
         let mangledSymbols = nmTask.stdOut
             .split(separator: "\n")
             .map{ $0.replacingOccurrences(of: "_$", with: "\\$")} // the mangled code has $ in it. We need to remove those so it can be handled by the shell
             .compactMap { $0.split(separator: " ").last }.map(String.init)
-        
-        // Demangling symbols using 'swift-demangle'
-        let demangledOutput = (shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + mangledSymbols))
- 
-        
-        let symbols =  demangledOutput.stdOut
-            .replacingOccurrences(of: "_$", with: "\\$")
-            .split(separator: "\n", omittingEmptySubsequences: true)  // Split the input into lines; ignore empty lines.
-            .map { $0.split(separator: " ", maxSplits: Int.max, omittingEmptySubsequences: true) }
-            .flatMap{ $0}
-        
-        var spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
-        Logger.info(msg: "Printing spaced symbols \(spacedSymbols)")
+          
+        // Demangling symbols using 'swift-demangle' in manageable batches to avoid "Argument list too long" error
+        let batchSize = 40  // Adjust batch size based on typical cmd line length limits
+        var symbols = [String]()
+      
+        for startIndex in stride(from: 0, to: mangledSymbols.count, by: batchSize) {
+            let endIndex = min(startIndex + batchSize, mangledSymbols.count)
+            let batch = Array(mangledSymbols[startIndex..<endIndex])
+            let demangledOutput = shell.launchWaitAndGetOutput(cmd: Shell.kBinXcRun, args: ["swift-demangle"] + batch)
+            let batchSymbols = demangledOutput.stdOut
+                .replacingOccurrences(of: "_$", with: "\\$")
+                .split(separator: "\n", omittingEmptySubsequences: true)  // Split the input into lines; ignore empty lines.
+                .map { $0.split(separator: " ", maxSplits: Int.max, omittingEmptySubsequences: true) }
+                .flatMap { $0 }
+                .map{ String($0)}
+            
+            Logger.info(msg: "Printing batch symbols \(batchSymbols)")
 
-        spacedSymbols = spacedSymbols.filter{ $0.contains("test")}
-
+            symbols.append(contentsOf: batchSymbols)
+        }
+      
+        // Further process symbols
+        let spacedSymbols = symbols.compactMap{ $0.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "()", with: "")}
+        //  Logger.info(msg: "Printing spaced symbols \(spacedSymbols)")
+      
         let classesAndMethods = spacedSymbols.compactMap{ item -> String? in
             let words = item.split(separator: " ")
-            return words.count == 3 ? words.suffix(2).joined(separator: " ") : nil }
+            return words.count == 3 && words.contains(where: { $0.hasPrefix("test")}) ? words.suffix(2).joined(separator: " ") : nil }
         
- 
-        Logger.info(msg: "Printing symbols \(classesAndMethods)")
-
+        Logger.info(msg: "Printing classes and methods \(classesAndMethods)")
         return classesAndMethods
     }
 
